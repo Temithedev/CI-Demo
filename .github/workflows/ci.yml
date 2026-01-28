@@ -28,4 +28,4 @@ jobs:
         python -m pytest 
         pip install pytest
         export PYTHONPATH=$PYTHONPATH:.
-        python -m pytest
+        python -m pytest .
