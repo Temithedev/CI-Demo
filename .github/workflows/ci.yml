@@ -29,3 +29,58 @@ jobs:
         pip install pytest
         export PYTHONPATH=$PYTHONPATH:.
         python -m pytest .
+name: CI/CD Pipeline
+
+# Triggers
+on:
+  push:
+    branches: [ "main" ]  # only run CI/CD on main branch
+
+# Jobs
+jobs:
+  # -------------------------------
+  # 1️⃣ Test Job
+  # -------------------------------
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          python -m pytest
+
+  # -------------------------------
+  # 2️⃣ Deploy Job
+  # -------------------------------
+  deploy:
+    needs: test          # deploy only if tests pass
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/app                # path to your app on EC2
+            git pull                # update code
+            # Optional: restart app if needed, e.g., systemctl restart myapp
+            echo "Deployment successful"
