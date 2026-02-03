@@ -1,4 +1,4 @@
-#testapp
+#test_app
 
 from app import add
 
